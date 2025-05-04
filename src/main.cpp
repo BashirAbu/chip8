@@ -1,7 +1,13 @@
+#include <QApplication>
+#include <QtWidgets/QMainWindow>
+#include <qcoreevent.h>
+#include <qmainwindow.h>
 
-#include <iostream>
+int main(int argc, char *argv[])
 
-int main() {
-  std::cout << "Hi" << std::endl;
-  return 0;
+{
+    QApplication app(argc, argv);
+    QMainWindow mw;
+    mw.show();
+    return app.exec();
 }
