@@ -16,5 +16,6 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets)
 target_include_directories(${PROJECT_NAME} PUBLIC "src/")
 add_library(${PROJECT_NAME}-lib STATIC ${SOURCES})
+target_link_libraries(${PROJECT_NAME}-lib PUBLIC Qt6::Core Qt6::Widgets)
 target_include_directories(${PROJECT_NAME}-lib PUBLIC src/)
 add_subdirectory(tests)

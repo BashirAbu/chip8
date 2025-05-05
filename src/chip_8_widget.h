@@ -14,8 +14,13 @@ class Chip8Widget : public QWidget
 
   protected:
     void paintEvent(QPaintEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
+  public slots:
+    void RefreshImage();
 
   private:
     QImage *qImage;
     Chip8 *chip8;
+    QTimer *timer;
 };

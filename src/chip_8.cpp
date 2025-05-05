@@ -1,11 +1,12 @@
 #include "chip_8.h"
+#include <QFile>
 #include <cstdint>
 #include <cstring>
-#include <exception>
 #include <filesystem>
-#include <fstream>
-#include <ios>
 #include <iostream>
+#include <qimage.h>
+#include <qnamespace.h>
+#include <qtmetamacros.h>
 #include <time.h>
 Chip8::Chip8(std::filesystem::path romPath)
 {
@@ -19,6 +20,25 @@ Chip8::Chip8(std::filesystem::path romPath)
     {
         memory[i] = font_data[i - 0x50];
     }
+
+    qKeyToChip8KeyMap[-1] = -1;
+    qKeyToChip8KeyMap[Qt::Key_1] = 1;
+    qKeyToChip8KeyMap[Qt::Key_2] = 2;
+    qKeyToChip8KeyMap[Qt::Key_3] = 3;
+    qKeyToChip8KeyMap[Qt::Key_4] = 0xC;
+    qKeyToChip8KeyMap[Qt::Key_Q] = 4;
+    qKeyToChip8KeyMap[Qt::Key_W] = 5;
+    qKeyToChip8KeyMap[Qt::Key_E] = 6;
+    qKeyToChip8KeyMap[Qt::Key_R] = 0xD;
+    qKeyToChip8KeyMap[Qt::Key_A] = 7;
+    qKeyToChip8KeyMap[Qt::Key_S] = 8;
+    qKeyToChip8KeyMap[Qt::Key_D] = 9;
+    qKeyToChip8KeyMap[Qt::Key_F] = 0xE;
+    qKeyToChip8KeyMap[Qt::Key_Z] = 0xA;
+    qKeyToChip8KeyMap[Qt::Key_X] = 0;
+    qKeyToChip8KeyMap[Qt::Key_C] = 0xB;
+    qKeyToChip8KeyMap[Qt::Key_V] = 0xF;
+
     if (!romPath.empty())
     {
 
@@ -28,29 +48,40 @@ Chip8::Chip8(std::filesystem::path romPath)
             std::cerr << std::format("Rom '{}' size is too large",
                                      romPath.generic_string())
                       << std::endl;
+            return;
         }
-        try
+        QFile romFile(romPath);
+        if (!romFile.open(QIODevice::ReadOnly))
         {
-            std::ifstream rom(romPath, std::ios::binary);
+            std::cerr << "Failed to open rom" << std::endl;
+            return;
+        }
 
-            if (rom.is_open())
-            {
-                rom.read((char *)&(memory[0x200]), romSize);
-            }
-        }
-        catch (std::exception &e)
-        {
-            std::cerr << "Failed to open rom. Error: " << e.what() << std::endl;
-        }
+        QByteArray data = romFile.readAll();
+
+        romFile.close();
+
+        memcpy(&memory[0x200], data.data(), romSize);
     }
 }
 Chip8::~Chip8() {}
 
 void Chip8::Tick()
 {
-    // Update timers
+
     Fetch();
     DecodeAndExecute();
+}
+void Chip8::IncrementTimers()
+{
+    if (delayTimer)
+    {
+        delayTimer--;
+    }
+    if (soundTimer)
+    {
+        soundTimer--;
+    }
 }
 void Chip8::Fetch()
 {
@@ -157,10 +188,12 @@ void Chip8::DecodeAndExecute()
     {
         I_ANNN();
     }
+    break;
     case 0xB:
     {
         I_BNNN();
     }
+    break;
     case 0xC:
     {
         I_CXNN();
@@ -219,6 +252,11 @@ void Chip8::DecodeAndExecute()
             break;
         }
     }
+    default:
+    {
+        std::cerr << "Unkown instruction" << std::endl;
+    }
+    break;
     }
 }
 
@@ -250,6 +288,7 @@ void Chip8::I_ANNN()
 }
 void Chip8::I_DXYN()
 {
+
     uint8_t x = (0x0f00 & instruction) >> 8;
     uint16_t xPos = registers[x];
     uint8_t y = (0x00f0 & instruction) >> 4;
@@ -279,6 +318,8 @@ void Chip8::I_DXYN()
             *pixel = *pixel ? 255 : 0;
         }
     }
+
+    emit RefreshDisplay();
 }
 void Chip8::I_0NNN() {}
 void Chip8::I_00EE()
@@ -430,7 +471,7 @@ void Chip8::I_EX9E()
 {
     uint8_t x = (0x0f00 & instruction) >> 8;
 
-    if ((int8_t)registers[x] == currentKey)
+    if ((int8_t)registers[x] == qKeyToChip8KeyMap[currentKey])
     {
         programCounter += 2;
     }
@@ -439,7 +480,7 @@ void Chip8::I_EXA1()
 {
     uint8_t x = (0x0f00 & instruction) >> 8;
 
-    if ((int8_t)registers[x] != currentKey)
+    if ((int8_t)registers[x] != qKeyToChip8KeyMap[currentKey])
     {
         programCounter += 2;
     }
@@ -467,9 +508,9 @@ void Chip8::I_FX1E()
 void Chip8::I_FX0A()
 {
     uint8_t x = (0x0f00 & instruction) >> 8;
-    if (currentKey != -1)
+    if (qKeyToChip8KeyMap[currentKey] != -1)
     {
-        registers[x] = currentKey;
+        registers[x] = qKeyToChip8KeyMap[currentKey];
     }
     else
     {

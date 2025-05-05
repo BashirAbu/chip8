@@ -1,7 +1,11 @@
 #pragma once
+#include <QObject>
+#include <cstdint>
 #include <filesystem>
+#include <qtmetamacros.h>
 #include <stack>
 #include <stdint.h>
+#include <unordered_map>
 /*
   Address space:
   interpreter:
@@ -18,8 +22,9 @@
 #define MEMORY_SIZE 1024 * 4
 #define REGISTER_COUNT 16
 
-class Chip8
+class Chip8 : public QObject
 {
+    Q_OBJECT
   public:
     Chip8(std::filesystem::path romPath = "");
     ~Chip8();
@@ -85,7 +90,9 @@ class Chip8
     uint8_t memory[MEMORY_SIZE];
     uint8_t display[DISPLAY_WIDTH * DISPLAY_HEIGHT];
     uint8_t registers[REGISTER_COUNT];
-    int8_t currentKey = -1;
+    int currentKey = -1;
+
+    std::unordered_map<int, int8_t> qKeyToChip8KeyMap;
 
     uint16_t programCounter = 0;
     uint16_t indexRegister = 0;
@@ -96,4 +103,9 @@ class Chip8
 
     uint8_t delayTimer = 0;
     uint8_t soundTimer = 0;
+
+  signals:
+    void RefreshDisplay();
+  public slots:
+    void IncrementTimers();
 };
