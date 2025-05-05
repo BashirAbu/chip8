@@ -85,6 +85,8 @@ class Chip8
     uint8_t memory[MEMORY_SIZE];
     uint8_t display[DISPLAY_WIDTH * DISPLAY_HEIGHT];
     uint8_t registers[REGISTER_COUNT];
+    int8_t currentKey = -1;
+
     uint16_t programCounter = 0;
     uint16_t indexRegister = 0;
 

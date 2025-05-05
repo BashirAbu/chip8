@@ -17,7 +17,7 @@ Chip8::Chip8(std::filesystem::path romPath)
     memset(registers, 0, 16);
     for (int i = 0x50; i < 0x50 + (16 * 5); i++)
     {
-        memory[i] = font_data[i];
+        memory[i] = font_data[i - 0x50];
     }
     if (!romPath.empty())
     {
@@ -48,6 +48,7 @@ Chip8::~Chip8() {}
 
 void Chip8::Tick()
 {
+    // Update timers
     Fetch();
     DecodeAndExecute();
 }
@@ -425,14 +426,89 @@ void Chip8::I_CXNN()
 
     registers[x] = (rand() % 0xff) & nn;
 }
-void Chip8::I_EX9E() {}
-void Chip8::I_EXA1() {}
-void Chip8::I_FX07() {}
-void Chip8::I_FX15() {}
-void Chip8::I_FX18() {}
-void Chip8::I_FX1E() {}
-void Chip8::I_FX0A() {}
-void Chip8::I_FX29() {}
-void Chip8::I_FX33() {}
-void Chip8::I_FX55() {}
-void Chip8::I_FX65() {}
+void Chip8::I_EX9E()
+{
+    uint8_t x = (0x0f00 & instruction) >> 8;
+
+    if ((int8_t)registers[x] == currentKey)
+    {
+        programCounter += 2;
+    }
+}
+void Chip8::I_EXA1()
+{
+    uint8_t x = (0x0f00 & instruction) >> 8;
+
+    if ((int8_t)registers[x] != currentKey)
+    {
+        programCounter += 2;
+    }
+}
+void Chip8::I_FX07()
+{
+    uint8_t x = (0x0f00 & instruction) >> 8;
+    registers[x] = delayTimer;
+}
+void Chip8::I_FX15()
+{
+    uint8_t x = (0x0f00 & instruction) >> 8;
+    delayTimer = registers[x];
+}
+void Chip8::I_FX18()
+{
+    uint8_t x = (0x0f00 & instruction) >> 8;
+    soundTimer = registers[x];
+}
+void Chip8::I_FX1E()
+{
+    uint8_t x = (0x0f00 & instruction) >> 8;
+    indexRegister += registers[x];
+}
+void Chip8::I_FX0A()
+{
+    uint8_t x = (0x0f00 & instruction) >> 8;
+    if (currentKey != -1)
+    {
+        registers[x] = currentKey;
+    }
+    else
+    {
+        programCounter -= 2;
+    }
+}
+void Chip8::I_FX29()
+{
+    uint8_t x = (0x0f00 & instruction) >> 8;
+    uint8_t character = registers[x];
+    indexRegister = 0x50 + (character * 5);
+}
+void Chip8::I_FX33()
+{
+
+    uint8_t x = (0x0f00 & instruction) >> 8;
+    uint8_t value = registers[x];
+
+    uint8_t digit1 = value % 10;
+    uint8_t digit2 = (value / 10) % 10;
+    uint8_t digit3 = value / 100;
+
+    memory[indexRegister] = digit1;
+    memory[indexRegister + 1] = digit2;
+    memory[indexRegister + 2] = digit3;
+}
+void Chip8::I_FX55()
+{
+    uint8_t x = (0x0f00 & instruction) >> 8;
+    for (int i = 0; i <= x; i++)
+    {
+        memory[indexRegister + i] = registers[i];
+    }
+}
+void Chip8::I_FX65()
+{
+    uint8_t x = (0x0f00 & instruction) >> 8;
+    for (int i = 0; i <= x; i++)
+    {
+        registers[i] = memory[indexRegister + i];
+    }
+}

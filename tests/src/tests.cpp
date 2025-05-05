@@ -1,6 +1,11 @@
 #include "chip_8.h"
 #include <cstdint>
 #include <gtest/gtest.h>
+#include <ios>
+
+// DXYN
+// CXNN
+
 TEST(Chip8, Fetch)
 {
     Chip8 chip8;
@@ -213,4 +218,140 @@ TEST(Chip8, I_BNNN)
     chip8.registers[0] = 10;
     chip8.Tick();
     ASSERT_EQ(chip8.programCounter, chip8.registers[0] + 0xABC);
+}
+TEST(Chip8, I_EX9E)
+{
+    Chip8 chip8;
+    chip8.memory[chip8.programCounter] = 0xEA;
+    chip8.memory[chip8.programCounter + 1] = 0x9E;
+    chip8.registers[0xA] = 0xE;
+    chip8.currentKey = 0xE;
+    chip8.Tick();
+    ASSERT_EQ(chip8.programCounter, 0x0204);
+}
+TEST(Chip8, I_EXA1)
+{
+    Chip8 chip8;
+    chip8.memory[chip8.programCounter] = 0xEA;
+    chip8.memory[chip8.programCounter + 1] = 0xA1;
+    chip8.registers[0xA] = 0xE;
+    chip8.currentKey = 0xE;
+    chip8.Tick();
+    ASSERT_EQ(chip8.programCounter, 0x0202);
+}
+TEST(Chip8, I_FX07)
+{
+    Chip8 chip8;
+    chip8.memory[chip8.programCounter] = 0xFA;
+    chip8.memory[chip8.programCounter + 1] = 0x07;
+    chip8.delayTimer = 127;
+    chip8.Tick();
+    ASSERT_EQ(chip8.registers[0xA], 127);
+}
+TEST(Chip8, I_FX15)
+{
+    Chip8 chip8;
+    chip8.memory[chip8.programCounter] = 0xFA;
+    chip8.memory[chip8.programCounter + 1] = 0x15;
+    chip8.registers[0xA] = 127;
+    chip8.Tick();
+    ASSERT_EQ(chip8.delayTimer, 127);
+}
+TEST(Chip8, I_FX18)
+{
+    Chip8 chip8;
+    chip8.memory[chip8.programCounter] = 0xFA;
+    chip8.memory[chip8.programCounter + 1] = 0x18;
+    chip8.registers[0xA] = 127;
+    chip8.Tick();
+    ASSERT_EQ(chip8.soundTimer, 127);
+}
+TEST(Chip8, I_FX1E)
+{
+    Chip8 chip8;
+    chip8.memory[chip8.programCounter] = 0xFA;
+    chip8.memory[chip8.programCounter + 1] = 0x1E;
+    chip8.indexRegister = 88;
+    chip8.registers[0xA] = 22;
+    chip8.Tick();
+    ASSERT_EQ(chip8.indexRegister, 88 + 22);
+}
+TEST(Chip8, I_FX0A_TRUE)
+{
+    Chip8 chip8;
+    chip8.memory[chip8.programCounter] = 0xFA;
+    chip8.memory[chip8.programCounter + 1] = 0x0A;
+    chip8.currentKey = 5;
+    chip8.Tick();
+    ASSERT_EQ(chip8.registers[0xA], 5);
+}
+TEST(Chip8, I_FX0A_FALSE)
+{
+    Chip8 chip8;
+    chip8.memory[chip8.programCounter] = 0xFA;
+    chip8.memory[chip8.programCounter + 1] = 0x0A;
+    chip8.currentKey = -1;
+    chip8.Tick();
+    ASSERT_EQ(chip8.programCounter, 0x200);
+}
+
+TEST(Chip8, I_FX29)
+{
+    Chip8 chip8;
+    chip8.memory[chip8.programCounter] = 0xFA;
+    chip8.memory[chip8.programCounter + 1] = 0x29;
+    chip8.registers[0xA] = 4;
+    chip8.Tick();
+    ASSERT_EQ(chip8.indexRegister, 0x50 + (4 * 5));
+    ASSERT_EQ(chip8.memory[chip8.indexRegister], 0x90);
+}
+TEST(Chip8, I_FX33)
+{
+    Chip8 chip8;
+    chip8.memory[chip8.programCounter] = 0xFA;
+    chip8.memory[chip8.programCounter + 1] = 0x33;
+    chip8.registers[0xA] = 217;
+    chip8.Tick();
+    ASSERT_EQ(chip8.memory[chip8.indexRegister], 7);
+    ASSERT_EQ(chip8.memory[chip8.indexRegister + 1], 1);
+    ASSERT_EQ(chip8.memory[chip8.indexRegister + 2], 2);
+}
+TEST(Chip8, I_FX55)
+{
+    Chip8 chip8;
+    chip8.memory[chip8.programCounter] = 0xF4;
+    chip8.memory[chip8.programCounter + 1] = 0x55;
+
+    chip8.registers[0] = 0;
+    chip8.registers[1] = 1;
+    chip8.registers[2] = 2;
+    chip8.registers[3] = 3;
+    chip8.registers[4] = 4;
+
+    chip8.Tick();
+    ASSERT_EQ(chip8.memory[chip8.indexRegister + 0], 0);
+    ASSERT_EQ(chip8.memory[chip8.indexRegister + 1], 1);
+    ASSERT_EQ(chip8.memory[chip8.indexRegister + 2], 2);
+    ASSERT_EQ(chip8.memory[chip8.indexRegister + 3], 3);
+    ASSERT_EQ(chip8.memory[chip8.indexRegister + 4], 4);
+}
+TEST(Chip8, I_FX65)
+{
+    Chip8 chip8;
+    chip8.memory[chip8.programCounter] = 0xF4;
+    chip8.memory[chip8.programCounter + 1] = 0x65;
+
+    chip8.memory[chip8.indexRegister + 0] = 0;
+    chip8.memory[chip8.indexRegister + 1] = 1;
+    chip8.memory[chip8.indexRegister + 2] = 2;
+    chip8.memory[chip8.indexRegister + 3] = 3;
+    chip8.memory[chip8.indexRegister + 4] = 4;
+
+    chip8.Tick();
+
+    ASSERT_EQ(chip8.registers[0], 0);
+    ASSERT_EQ(chip8.registers[1], 1);
+    ASSERT_EQ(chip8.registers[2], 2);
+    ASSERT_EQ(chip8.registers[3], 3);
+    ASSERT_EQ(chip8.registers[4], 4);
 }
