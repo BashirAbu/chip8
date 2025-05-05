@@ -35,6 +35,35 @@ class Chip8
     void I_7XNN();
     void I_ANNN();
     void I_DXYN();
+    void I_0NNN();
+    void I_00EE();
+    void I_2NNN();
+    void I_3XNN();
+    void I_4XNN();
+    void I_5XY0();
+    void I_9XY0();
+    void I_8XY0();
+    void I_8XY1();
+    void I_8XY2();
+    void I_8XY3();
+    void I_8XY4();
+    void I_8XY5();
+    void I_8XY6();
+    void I_8XYE();
+    void I_8XY7();
+    void I_BNNN();
+    void I_CXNN();
+    void I_EX9E();
+    void I_EXA1();
+    void I_FX07();
+    void I_FX15();
+    void I_FX18();
+    void I_FX1E();
+    void I_FX0A();
+    void I_FX29();
+    void I_FX33();
+    void I_FX55();
+    void I_FX65();
 
     uint8_t font_data[16 * 5] = {0xF0, 0x90, 0x90, 0x90, 0xF0,  // 0
                                  0x20, 0x60, 0x20, 0x20, 0x70,  // 1
