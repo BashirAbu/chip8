@@ -10,10 +10,9 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 qt_standard_project_setup()
 
 
-file (GLOB_RECURSE SOURCES src/chip_8.cpp)
+file (GLOB_RECURSE SOURCES src/chip_8.cpp )
 add_executable(${PROJECT_NAME}
-   ${SOURCES} src/main.cpp
-)
+   ${SOURCES} src/main.cpp src/main_window.cpp src/chip_8_widget.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets)
 target_include_directories(${PROJECT_NAME} PUBLIC "src/")
 add_library(${PROJECT_NAME}-lib STATIC ${SOURCES})

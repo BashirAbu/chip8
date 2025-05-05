@@ -12,6 +12,12 @@
 
 */
 
+#define DISPLAY_WIDTH 64
+#define DISPLAY_HEIGHT 32
+
+#define MEMORY_SIZE 1024 * 4
+#define REGISTER_COUNT 16
+
 class Chip8
 {
   public:
@@ -47,9 +53,9 @@ class Chip8
                                  0xF0, 0x80, 0xF0, 0x80, 0xF0,  // E
                                  0xF0, 0x80, 0xF0, 0x80, 0x80}; // F
 
-    uint8_t memory[4 * 1024];
-    uint8_t display[64 * 32];
-    uint8_t registers[16];
+    uint8_t memory[MEMORY_SIZE];
+    uint8_t display[DISPLAY_WIDTH * DISPLAY_HEIGHT];
+    uint8_t registers[REGISTER_COUNT];
     uint16_t programCounter = 0;
     uint16_t indexRegister = 0;
 

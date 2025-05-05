@@ -1,6 +1,7 @@
 #include "chip_8.h"
 #include <cstdint>
 #include <cstring>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <ios>
@@ -12,23 +13,33 @@ Chip8::Chip8(std::filesystem::path romPath)
     memset(memory, 0, (size_t)4 * 1024);
     memset(display, 0, (size_t)32 * 64);
     memset(registers, 0, 16);
-    for (int i = 0x50; i < 16 * 5; i++)
+    for (int i = 0x50; i < 0x50 + (16 * 5); i++)
     {
         memory[i] = font_data[i];
     }
     if (!romPath.empty())
     {
 
-        if (std::filesystem::file_size(romPath) > (4 * 1024 - 0x200))
+        int64_t romSize = (int64_t)std::filesystem::file_size(romPath);
+        if (romSize > (MEMORY_SIZE - 0x200))
         {
             std::cerr << std::format("Rom '{}' size is too large",
                                      romPath.generic_string())
                       << std::endl;
         }
+        try
+        {
+            std::ifstream rom(romPath, std::ios::binary);
 
-        std::fstream rom(romPath, std::ios::binary);
-        rom.read((char *)&memory[0x200],
-                 (long long)std::filesystem::file_size(romPath));
+            if (rom.is_open())
+            {
+                rom.read((char *)&(memory[0x200]), romSize);
+            }
+        }
+        catch (std::exception &e)
+        {
+            std::cerr << "Failed to open rom. Error: " << e.what() << std::endl;
+        }
     }
 }
 Chip8::~Chip8() {}
@@ -40,9 +51,9 @@ void Chip8::Tick()
 }
 void Chip8::Fetch()
 {
-    instruction = memory[programCounter + 1];
+    instruction = memory[programCounter];
     instruction <<= 8;
-    instruction |= memory[programCounter];
+    instruction |= memory[programCounter + 1];
 
     programCounter += 2;
 }
@@ -85,7 +96,10 @@ void Chip8::DecodeAndExecute()
     }
 }
 
-void Chip8::I_00E0() { memset(display, 0, size_t(64 * 32)); }
+void Chip8::I_00E0()
+{
+    memset(display, 0, size_t(DISPLAY_WIDTH * DISPLAY_HEIGHT));
+}
 void Chip8::I_1NNN()
 {
     uint16_t nnn = 0x0fff & instruction;
@@ -118,19 +132,25 @@ void Chip8::I_DXYN()
 
     registers[0xf] = 0;
 
-    uint8_t nthSpriteByte = memory[indexRegister + n];
-
-    for (int i = 0; i < 8; i++)
+    for (uint8_t row = 0; row < n; row++)
     {
-        uint8_t currentBit = (nthSpriteByte >> (7 - i)) & 0b00000001;
+        uint8_t spriteByte = memory[indexRegister + row];
+        uint8_t currentY = (yPos + row) % DISPLAY_HEIGHT;
 
-        display[xPos + (yPos * 32)] =
-            (display[xPos + (yPos * 32)] & 0b00000001) ^ currentBit;
-        registers[0xf] = !display[xPos + (yPos * 32)];
-        xPos = (xPos + 1);
-        if (xPos > 63)
-        {
-            break;
+        for (int bit = 0; bit < 8; bit++)
+        { // Draw 8 pixels per row
+            uint8_t currentX = (xPos + bit) % DISPLAY_WIDTH;
+            uint8_t *pixel = &display[currentY * DISPLAY_WIDTH + currentX];
+
+            uint8_t spriteBit = (spriteByte >> (7 - bit)) & 0x01;
+
+            if (*pixel && spriteBit)
+            {
+                registers[0xF] = 1;
+            }
+
+            *pixel ^= spriteBit;
+            *pixel = *pixel ? 255 : 0;
         }
     }
 }
