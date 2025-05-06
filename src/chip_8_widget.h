@@ -10,7 +10,6 @@ class Chip8Widget : public QWidget
     Chip8Widget(QWidget *parent = nullptr);
     ~Chip8Widget();
 
-    void Tick();
     void Beep();
 
   protected:
@@ -18,10 +17,12 @@ class Chip8Widget : public QWidget
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
   public slots:
+    void Tick();
     void RefreshImage();
 
   private:
     QImage *qImage;
     Chip8 *chip8;
-    QTimer *timer;
+    QTimer *chip8Timer;
+    QTimer *tickTimer;
 };

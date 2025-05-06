@@ -16,12 +16,17 @@ Chip8Widget::Chip8Widget(QWidget *parent) : QWidget(parent)
         new QImage({DISPLAY_WIDTH, DISPLAY_HEIGHT}, QImage::Format_Grayscale8);
 
     chip8 = new Chip8("roms/Tetris [Fran Dachille, 1991].ch8");
-    timer = new QTimer(this);
-    QObject::connect(timer, &QTimer::timeout, chip8, &Chip8::IncrementTimers);
-    timer->start(int((1.0f / 60.0f) * 1000.0f));
+    chip8Timer = new QTimer(this);
+    QObject::connect(chip8Timer, &QTimer::timeout, chip8,
+                     &Chip8::IncrementTimers);
+    chip8Timer->start(int((1.0f / 60.0f) * 1000.0f));
 
     QObject::connect(chip8, &Chip8::RefreshDisplay, this,
                      &Chip8Widget::RefreshImage);
+
+    tickTimer = new QTimer(this);
+    QObject::connect(tickTimer, &QTimer::timeout, this, &Chip8Widget::Tick);
+    tickTimer->start(1);
 }
 
 Chip8Widget::~Chip8Widget()
