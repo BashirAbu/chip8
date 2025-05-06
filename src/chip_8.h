@@ -90,6 +90,7 @@ class Chip8 : public QObject
     uint8_t memory[MEMORY_SIZE];
     uint8_t display[DISPLAY_WIDTH * DISPLAY_HEIGHT];
     uint8_t registers[REGISTER_COUNT];
+    bool refreshDisplay = false;
     int currentKey = -1;
 
     std::unordered_map<int, int8_t> qKeyToChip8KeyMap;

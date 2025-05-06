@@ -3,18 +3,19 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <cstring>
+#include <qapplication.h>
 #include <qiterator.h>
 #include <qlogging.h>
 #include <qobject.h>
 #include <qtimer.h>
-#include <qwidget.h>
+
 Chip8Widget::Chip8Widget(QWidget *parent) : QWidget(parent)
 {
     setFocusPolicy(Qt::StrongFocus);
     qImage =
         new QImage({DISPLAY_WIDTH, DISPLAY_HEIGHT}, QImage::Format_Grayscale8);
 
-    chip8 = new Chip8("roms/6-keypad.ch8");
+    chip8 = new Chip8("roms/Tetris [Fran Dachille, 1991].ch8");
     timer = new QTimer(this);
     QObject::connect(timer, &QTimer::timeout, chip8, &Chip8::IncrementTimers);
     timer->start(int((1.0f / 60.0f) * 1000.0f));
@@ -29,7 +30,16 @@ Chip8Widget::~Chip8Widget()
     delete chip8;
 }
 
-void Chip8Widget::Tick() { chip8->Tick(); }
+void Chip8Widget::Tick()
+{
+    chip8->Tick();
+    if (chip8->soundTimer != 0)
+    {
+        Beep();
+    }
+}
+
+void Chip8Widget::Beep() {}
 void Chip8Widget::RefreshImage()
 {
     memcpy(qImage->bits(), chip8->display,
@@ -43,7 +53,8 @@ void Chip8Widget::paintEvent(QPaintEvent *event)
 }
 void Chip8Widget::keyPressEvent(QKeyEvent *event)
 {
-    if (chip8->qKeyToChip8KeyMap.contains(event->key()))
+    if (chip8->qKeyToChip8KeyMap.contains(event->key()) &&
+        chip8->currentKey != event->key())
     {
         chip8->currentKey = event->key();
     }

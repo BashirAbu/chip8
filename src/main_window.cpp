@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     QObject::connect(timer, &QTimer::timeout, this, &MainWindow::Tick);
 
-    timer->start(0);
+    timer->start(1);
 }
 
 void MainWindow::Tick() { chip8Widget->Tick(); }

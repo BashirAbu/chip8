@@ -217,6 +217,7 @@ void Chip8::DecodeAndExecute()
             I_EXA1();
         }
     }
+    break;
     case 0xF:
     {
         uint8_t lastByte = 0x00ff & instruction;
@@ -252,6 +253,7 @@ void Chip8::DecodeAndExecute()
             break;
         }
     }
+    break;
     default:
     {
         std::cerr << "Unkown instruction" << std::endl;
@@ -263,6 +265,7 @@ void Chip8::DecodeAndExecute()
 void Chip8::I_00E0()
 {
     memset(display, 0, size_t(DISPLAY_WIDTH * DISPLAY_HEIGHT));
+    emit RefreshDisplay();
 }
 void Chip8::I_1NNN()
 {
@@ -288,7 +291,6 @@ void Chip8::I_ANNN()
 }
 void Chip8::I_DXYN()
 {
-
     uint8_t x = (0x0f00 & instruction) >> 8;
     uint16_t xPos = registers[x];
     uint8_t y = (0x00f0 & instruction) >> 4;
@@ -306,16 +308,15 @@ void Chip8::I_DXYN()
         {
             uint8_t currentX = (xPos + bit) % DISPLAY_WIDTH;
             uint8_t *pixel = &display[currentY * DISPLAY_WIDTH + currentX];
-
+            *pixel = *pixel ? 0xff : 0x00;
             uint8_t spriteBit = (spriteByte >> (7 - bit)) & 0x01;
-
+            spriteBit = spriteBit ? 0xff : 0x00;
             if (*pixel && spriteBit)
             {
                 registers[0xF] = 1;
             }
 
-            *pixel ^= spriteBit;
-            *pixel = *pixel ? 255 : 0;
+            *pixel = (*pixel) ^ spriteBit;
         }
     }
 
@@ -424,11 +425,11 @@ void Chip8::I_8XY5()
 }
 void Chip8::I_8XY6()
 {
-    uint8_t x = (0x0f00 & instruction) >> 8;
-    // uint8_t y = (0x00f0 & instruction) >> 4;
-    uint8_t lsb = 0x0001 & registers[x];
-    registers[0xf] = lsb;
-    registers[x] >>= 1;
+    uint8_t x = (instruction & 0x0F00) >> 8;
+    uint8_t y = (instruction & 0x00F0) >> 4;
+    uint8_t value = registers[y];
+    registers[0xF] = value & 0x01;
+    registers[x] = value >> 1;
 }
 void Chip8::I_8XY7()
 {
@@ -448,24 +449,23 @@ void Chip8::I_8XY7()
 }
 void Chip8::I_8XYE()
 {
-    uint8_t x = (0x0f00 & instruction) >> 8;
-    // uint8_t y = (0x00f0 & instruction) >> 4;
-    uint8_t lsb = 0x0001 & registers[x];
-    registers[0xf] = lsb;
-    registers[x] <<= 1;
+    uint8_t x = (instruction & 0x0F00) >> 8;
+    uint8_t y = (instruction & 0x00F0) >> 4;
+    uint8_t value = registers[y];
+    registers[0xF] = (value >> 7) & 0x01;
+    registers[x] = value << 1;
 }
 void Chip8::I_BNNN()
 {
 
-    uint16_t nnn = (0x0fff & instruction);
-    programCounter = registers[0] + nnn;
+    uint16_t nnn = instruction & 0x0FFF;
+    programCounter = (registers[0] + nnn) & 0x0FFF;
 }
 void Chip8::I_CXNN()
 {
-    uint8_t x = (0x0f00 & instruction) >> 8;
-    uint16_t nn = (0x00ff & instruction);
-
-    registers[x] = (rand() % 0xff) & nn;
+    uint8_t x = (instruction & 0x0F00) >> 8;
+    uint8_t nn = instruction & 0x00FF;
+    registers[x] = (rand() % 256) & nn;
 }
 void Chip8::I_EX9E()
 {

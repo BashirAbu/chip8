@@ -11,6 +11,7 @@ class Chip8Widget : public QWidget
     ~Chip8Widget();
 
     void Tick();
+    void Beep();
 
   protected:
     void paintEvent(QPaintEvent *event) override;
