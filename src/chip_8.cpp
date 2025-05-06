@@ -68,7 +68,6 @@ Chip8::~Chip8() {}
 
 void Chip8::Tick()
 {
-
     Fetch();
     DecodeAndExecute();
 }
@@ -88,7 +87,6 @@ void Chip8::Fetch()
     instruction = memory[programCounter];
     instruction <<= 8;
     instruction |= memory[programCounter + 1];
-
     programCounter += 2;
 }
 void Chip8::DecodeAndExecute()
@@ -452,7 +450,7 @@ void Chip8::I_8XYE()
     uint8_t x = (instruction & 0x0F00) >> 8;
     uint8_t y = (instruction & 0x00F0) >> 4;
     uint8_t value = registers[y];
-    registers[0xF] = (value >> 7) & 0x01;
+    registers[0xF] = value & 0x01;
     registers[x] = value << 1;
 }
 void Chip8::I_BNNN()

@@ -195,7 +195,7 @@ TEST(Chip8, I_8XY6)
     Chip8 chip8;
     chip8.memory[chip8.programCounter] = 0x8A;
     chip8.memory[chip8.programCounter + 1] = 0xC6;
-    chip8.registers[0xA] = 0b00000010;
+    chip8.registers[0xC] = 0b00000010;
     chip8.Tick();
     ASSERT_EQ(chip8.registers[0xA], 0b00000001);
     ASSERT_EQ(chip8.registers[0xF], 0);
@@ -205,7 +205,7 @@ TEST(Chip8, I_8XYE)
     Chip8 chip8;
     chip8.memory[chip8.programCounter] = 0x8A;
     chip8.memory[chip8.programCounter + 1] = 0xCE;
-    chip8.registers[0xA] = 0b00000011;
+    chip8.registers[0xC] = 0b00000011;
     chip8.Tick();
     ASSERT_EQ(chip8.registers[0xA], 0b00000110);
     ASSERT_EQ(chip8.registers[0xF], 1);
@@ -224,7 +224,7 @@ TEST(Chip8, I_EX9E)
     Chip8 chip8;
     chip8.memory[chip8.programCounter] = 0xEA;
     chip8.memory[chip8.programCounter + 1] = 0x9E;
-    chip8.registers[0xA] = 0xE;
+    chip8.registers[0xA] = chip8.qKeyToChip8KeyMap[0xE];
     chip8.currentKey = 0xE;
     chip8.Tick();
     ASSERT_EQ(chip8.programCounter, 0x0204);
@@ -234,7 +234,7 @@ TEST(Chip8, I_EXA1)
     Chip8 chip8;
     chip8.memory[chip8.programCounter] = 0xEA;
     chip8.memory[chip8.programCounter + 1] = 0xA1;
-    chip8.registers[0xA] = 0xE;
+    chip8.registers[0xA] = chip8.qKeyToChip8KeyMap[0xE];
     chip8.currentKey = 0xE;
     chip8.Tick();
     ASSERT_EQ(chip8.programCounter, 0x0202);
@@ -283,7 +283,7 @@ TEST(Chip8, I_FX0A_TRUE)
     chip8.memory[chip8.programCounter + 1] = 0x0A;
     chip8.currentKey = 5;
     chip8.Tick();
-    ASSERT_EQ(chip8.registers[0xA], 5);
+    ASSERT_EQ(chip8.registers[0xA], chip8.qKeyToChip8KeyMap[5]);
 }
 TEST(Chip8, I_FX0A_FALSE)
 {
