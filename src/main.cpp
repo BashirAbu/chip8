@@ -1,9 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
-#include <QFont>
-#include <QFontDatabase>
-#include <qapplication.h>
-#include <qfontdatabase.h>
+#include <QLoggingCategory>
 int main(int argc, char *argv[])
 
 {

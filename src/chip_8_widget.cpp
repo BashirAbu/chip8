@@ -6,12 +6,19 @@
 #include <qapplication.h>
 #include <qiterator.h>
 #include <qlogging.h>
+#include <qnamespace.h>
 #include <qobject.h>
+#include <qpoint.h>
 #include <qtimer.h>
 Chip8Widget::Chip8Widget(const Rom *rom, QWidget *parent)
     : QWidget(parent), rom(rom)
 {
     setFocusPolicy(Qt::StrongFocus);
+    setAutoFillBackground(true);
+
+    QPalette pal = palette();
+    pal.setColor(QPalette::Window, Qt::black);
+    setPalette(pal);
 }
 
 void Chip8Widget::Play()
@@ -81,7 +88,12 @@ void Chip8Widget::RefreshImage()
 void Chip8Widget::paintEvent(QPaintEvent *event)
 {
     QPainter p(this);
-    p.drawImage(rect(), *qImage);
+
+    QSize scaled = qImage->size();
+    scaled.scale(size(), Qt::KeepAspectRatio);
+    QRect targetRect(QPoint(0, 0), scaled);
+    targetRect.moveCenter(rect().center());
+    p.drawImage(targetRect, *qImage);
 }
 void Chip8Widget::keyPressEvent(QKeyEvent *event)
 {
