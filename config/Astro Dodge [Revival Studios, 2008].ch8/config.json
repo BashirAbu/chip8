@@ -1,7 +1,7 @@
 {
-    "bg_color": 0,
-    "fg_color": 4294967295,
+    "bg_color": 4279762944,
+    "fg_color": 4278254591,
     "path": "D:/chip_8/roms/Astro Dodge [Revival Studios, 2008].ch8",
-    "tick_rate": 1,
-    "use_def_values": true
+    "tick_rate": 100,
+    "use_def_values": false
 }

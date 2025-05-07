@@ -4,11 +4,14 @@
 #include <QColorDialog>
 #include <qcolordialog.h>
 #include <qdialog.h>
+#include <qvalidator.h>
 ConfigDialog::ConfigDialog(class Config *config, class Rom *rom,
                            QWidget *parent)
     : QDialog(parent), ui(new Ui::ConfigDialog), config(config), rom(rom)
 {
     ui->setupUi(this);
+    ui->tickRateLE->setValidator(
+        new QIntValidator(0, 2147483647, ui->tickRateLE));
     Rom *startRom = nullptr;
     if (config)
     {
@@ -67,15 +70,17 @@ ConfigDialog::~ConfigDialog() { delete ui; }
 
 void ConfigDialog::accept()
 {
+    tickRate = (uint32_t)ui->tickRateLE->text().toLongLong();
     if (config)
     {
         ConfigConfig();
+        emit accepted();
     }
     else if (rom)
     {
         ConfigRom();
+        emit WriteRomFile(rom);
     }
-    emit accepted();
     this->destroy(true);
 }
 

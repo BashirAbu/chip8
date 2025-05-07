@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(changeCurrentRomsDirAction, &QAction::triggered, this,
             &MainWindow::ChangeRomsDir);
 
-    connect(configAction, &QAction::triggered, this, &MainWindow::ConfigAct);
+    connect(configAction, &QAction::triggered, this, [&] { ConfigAct(); });
     auto *emulationMenu = ui->menubar->addMenu("Emulation");
     pauseAct = new QAction("Pause", this);
     QAction *stopAct = new QAction("Stop", this);
@@ -63,12 +63,23 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() { delete ui; }
-void MainWindow::ConfigAct()
+void MainWindow::ConfigAct(Rom *rom)
 {
-    ConfigDialog *dialog = new ConfigDialog(&config, nullptr, this);
-    connect(dialog, &ConfigDialog::accepted, this,
-            &MainWindow::WriteConfigFile);
-    dialog->show();
+    if (rom)
+    {
+
+        ConfigDialog *dialog = new ConfigDialog(nullptr, rom, this);
+        connect(dialog, &ConfigDialog::WriteRomFile, this,
+                &MainWindow::WriteRomConfigFile);
+        dialog->show();
+    }
+    else
+    {
+        ConfigDialog *dialog = new ConfigDialog(&config, rom, this);
+        connect(dialog, &ConfigDialog::accepted, this,
+                &MainWindow::WriteConfigFile);
+        dialog->show();
+    }
 }
 void MainWindow::ChangeRomsDir()
 {
@@ -167,10 +178,10 @@ Rom MainWindow::ParseRomConfigFile(std::filesystem::path configPath)
     configFile.close();
     return rom;
 }
-void MainWindow::WriteRomConfigFile(const Rom &rom)
+void MainWindow::WriteRomConfigFile(Rom *rom)
 {
     std::filesystem::path configPath =
-        "config" / rom.path.filename() / "config.json";
+        "config" / rom->path.filename() / "config.json";
     QFile configFile(configPath);
 
     if (!configFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
@@ -178,14 +189,14 @@ void MainWindow::WriteRomConfigFile(const Rom &rom)
         ParseConfigFile();
     }
 
-    QJsonObject root = {{"path", rom.path.generic_string().c_str()},
-                        {"tick_rate", (int64_t)rom.tickRate},
-                        {"bg_color", (int64_t)rom.bgColor},
-                        {"fg_color", (int64_t)rom.fgColor},
-                        {"use_def_values", rom.useDefValuse}};
-    if (rom.useDefValuse)
+    QJsonObject root = {{"path", rom->path.generic_string().c_str()},
+                        {"tick_rate", (int64_t)rom->tickRate},
+                        {"bg_color", (int64_t)rom->bgColor},
+                        {"fg_color", (int64_t)rom->fgColor},
+                        {"use_def_values", rom->useDefValuse}};
+    if (rom->useDefValuse)
     {
-        root = {{"path", rom.path.generic_string().c_str()},
+        root = {{"path", rom->path.generic_string().c_str()},
                 {"tick_rate", (int64_t)config.defRomConfig.tickRate},
                 {"bg_color", (int64_t)config.defRomConfig.bgColor},
                 {"fg_color", (int64_t)config.defRomConfig.fgColor},
@@ -211,6 +222,8 @@ void MainWindow::HideRomDirWidget()
             QObject::connect(item, &RomListItem::PlayRom, this,
                              &MainWindow::PlayRom);
         }
+        connect(romListWidget, &RomListWidget::ConfigRomFile, this,
+                &MainWindow::WriteRomConfigFile);
     }
     centralStackWidget->addWidget(romListWidget);
     centralStackWidget->setCurrentWidget(romListWidget);
@@ -218,6 +231,15 @@ void MainWindow::HideRomDirWidget()
 void MainWindow::PlayRom(const Rom &rom)
 {
 
+    for (auto &r : roms)
+    {
+        if (r.useDefValuse)
+        {
+            auto temp = r.path;
+            r = config.defRomConfig;
+            r.path = temp;
+        }
+    }
     chip8Widget = new Chip8Widget(&rom, this);
     romListWidget->hide();
     centralStackWidget->addWidget(chip8Widget);

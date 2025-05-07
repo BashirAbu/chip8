@@ -49,11 +49,11 @@ class MainWindow : public QMainWindow
     void StopEmulation();
     void RestartEmulation();
     void ChangeRomsDir();
-    void ConfigAct();
+    void ConfigAct(Rom *rom = nullptr);
 
   private:
     Rom ParseRomConfigFile(std::filesystem::path configPath);
-    void WriteRomConfigFile(const Rom &rom);
+    void WriteRomConfigFile(Rom *rom);
 
     Ui::MainWindow *ui;
     Chip8Widget *chip8Widget = nullptr;

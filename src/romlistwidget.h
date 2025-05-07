@@ -14,16 +14,17 @@ class RomListItem : public QWidget
 {
     Q_OBJECT
   public:
-    RomListItem(const Rom &rom, QWidget *parent = nullptr);
+    RomListItem(Rom &rom, QWidget *parent = nullptr);
     ~RomListItem();
   signals:
     void PlayRom(const Rom &rom);
 
   protected:
     void mouseDoubleClickEvent(class QMouseEvent *event) override;
-    const Rom &rom;
+    Rom &rom;
     class QLabel *romTitle = nullptr;
     class QHBoxLayout *hlayout = nullptr;
+    friend RomListWidget;
 };
 
 class RomListWidget : public QWidget
@@ -35,6 +36,11 @@ class RomListWidget : public QWidget
                            QWidget *parent = nullptr);
     ~RomListWidget();
     QListWidget *GetListWidget();
+  public slots:
+    void ShowContextMenu(const QPoint &point);
+    void EmitConfigRomFileSignal(Rom *rom);
+  signals:
+    void ConfigRomFile(Rom *rom);
 
   private:
     std::vector<Rom> &roms;
