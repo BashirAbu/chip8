@@ -16,22 +16,36 @@ set(PROJECT_SOURCES
          src/mainwindow.h
          src/mainwindow.cpp
          src/mainwindow.ui
+         src/romdirwidget.h
+         src/romdirwidget.cpp
+         src/romdirwidget.ui
+         src/configdialog.h
+         src/configdialog.cpp
+         src/configdialog.ui
          src/chip_8.h
          src/chip_8.cpp
          src/main.cpp
          src/chip_8_widget.cpp
          src/chip_8_widget.h
+         assets/res.qrc
 )
 
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(chip_8
-        MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
-    )
-endif()
+
+qt_add_executable(chip_8
+    MANUAL_FINALIZATION
+    ${PROJECT_SOURCES}
+    src/romdirwidget.h src/romdirwidget.cpp src/romdirwidget.ui
+    src/romlistwidget.h src/romlistwidget.cpp src/romlistwidget.ui
+)
+
 target_link_libraries(chip_8 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+    
 target_include_directories(${PROJECT_NAME} PUBLIC "src/")
+
+
 qt_add_library(${PROJECT_NAME}-lib STATIC src/chip_8.cpp)
 target_link_libraries(${PROJECT_NAME}-lib PUBLIC Qt6::Core Qt6::Widgets)
 target_include_directories(${PROJECT_NAME}-lib PUBLIC src/)
+
+
 add_subdirectory(tests)

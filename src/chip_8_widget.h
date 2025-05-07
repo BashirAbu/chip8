@@ -7,9 +7,11 @@
 class Chip8Widget : public QWidget
 {
   public:
-    Chip8Widget(QWidget *parent = nullptr);
+    Chip8Widget(const class Rom *rom, QWidget *parent = nullptr);
     ~Chip8Widget();
-
+    void Play();
+    void Pause();
+    void Resume();
     void Beep();
 
   protected:
@@ -20,7 +22,9 @@ class Chip8Widget : public QWidget
     void Tick();
     void RefreshImage();
 
-  private:
+  public:
+    const class Rom *rom = nullptr;
+
     QImage *qImage;
     Chip8 *chip8;
     QTimer *chip8Timer;

@@ -1,34 +1,46 @@
 #include "chip_8.h"
 #include "chip_8_widget.h"
+#include "mainwindow.h"
 #include <QPaintEvent>
 #include <QPainter>
-#include <cstring>
 #include <qapplication.h>
 #include <qiterator.h>
 #include <qlogging.h>
 #include <qobject.h>
 #include <qtimer.h>
-
-Chip8Widget::Chip8Widget(QWidget *parent) : QWidget(parent)
+Chip8Widget::Chip8Widget(const Rom *rom, QWidget *parent)
+    : QWidget(parent), rom(rom)
 {
     setFocusPolicy(Qt::StrongFocus);
-    qImage =
-        new QImage({DISPLAY_WIDTH, DISPLAY_HEIGHT}, QImage::Format_Grayscale8);
+}
 
-    chip8 = new Chip8("roms/Tetris [Fran Dachille, 1991].ch8");
+void Chip8Widget::Play()
+{
+    qImage = new QImage({DISPLAY_WIDTH, DISPLAY_HEIGHT}, QImage::Format_RGB888);
+
+    chip8 = new Chip8(rom->path);
     chip8Timer = new QTimer(this);
     QObject::connect(chip8Timer, &QTimer::timeout, chip8,
                      &Chip8::IncrementTimers);
-    chip8Timer->start(int((1.0f / 60.0f) * 1000.0f));
+    chip8Timer->start(16);
 
     QObject::connect(chip8, &Chip8::RefreshDisplay, this,
                      &Chip8Widget::RefreshImage);
 
     tickTimer = new QTimer(this);
     QObject::connect(tickTimer, &QTimer::timeout, this, &Chip8Widget::Tick);
-    tickTimer->start(1);
+    tickTimer->start((int)rom->tickRate);
 }
-
+void Chip8Widget::Pause()
+{
+    tickTimer->stop();
+    chip8Timer->stop();
+}
+void Chip8Widget::Resume()
+{
+    tickTimer->start();
+    chip8Timer->start();
+}
 Chip8Widget::~Chip8Widget()
 {
     delete qImage;
@@ -47,8 +59,23 @@ void Chip8Widget::Tick()
 void Chip8Widget::Beep() {}
 void Chip8Widget::RefreshImage()
 {
-    memcpy(qImage->bits(), chip8->display,
-           (size_t)DISPLAY_WIDTH * DISPLAY_HEIGHT);
+
+    for (int y = 0; y < DISPLAY_HEIGHT; y++)
+    {
+        for (int x = 0; x < DISPLAY_WIDTH; x++)
+        {
+            QRgb rgb;
+            if (chip8->display[(x + (y * DISPLAY_WIDTH))])
+            {
+                rgb = (int)rom->fgColor;
+            }
+            else
+            {
+                rgb = (int)rom->bgColor;
+            }
+            qImage->setPixelColor({x, y}, rgb);
+        }
+    }
     update();
 }
 void Chip8Widget::paintEvent(QPaintEvent *event)
