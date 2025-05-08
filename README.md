@@ -12,7 +12,7 @@ A cross‑platform Chip‑8 emulator built with **Qt 6** for its GUI. It runs n
 </div>  
 
 ## Demo
-![Demo](screenshots/demo.mp4)
+[![Demo](screenshots/demo.mp4)](https://github.com/user-attachments/assets/0297dfab-5965-4233-93a5-d43d95bf565f)
 
 ## Table of Contents
 
