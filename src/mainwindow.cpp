@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setWindowTitle("Chip8");
     centralStackWidget = new QStackedWidget(this);
     setCentralWidget(centralStackWidget);
     ParseConfigFile();

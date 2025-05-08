@@ -1,4 +1,4 @@
 @echo off
 pushd tests\
-..\build\tests.exe
+..\build\tests\tests.exe
 popd

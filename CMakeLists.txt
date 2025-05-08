@@ -19,6 +19,9 @@ set(PROJECT_SOURCES
          src/romdirwidget.h
          src/romdirwidget.cpp
          src/romdirwidget.ui
+         src/romlistwidget.h
+         src/romlistwidget.cpp
+         src/romlistwidget.ui
          src/configdialog.h
          src/configdialog.cpp
          src/configdialog.ui
@@ -34,12 +37,10 @@ set(PROJECT_SOURCES
 )
 
 
-qt_add_executable(chip_8
+qt_add_executable(chip_8 WIN32
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
-    src/romdirwidget.h src/romdirwidget.cpp src/romdirwidget.ui
-    src/romlistwidget.h src/romlistwidget.cpp src/romlistwidget.ui
-    src/debugwidget.h src/debugwidget.cpp src/debugwidget.ui
+  
 )
 
 target_link_libraries(chip_8 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
