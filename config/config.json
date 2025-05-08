@@ -2,5 +2,5 @@
     "bg_color": 0,
     "fg_color": 4294967295,
     "rom_dir": "D:/chip_8/roms",
-    "tick_rate": 1
+    "tick_rate": 1000
 }

@@ -79,9 +79,8 @@ bool MainWindow::event(QEvent *e)
                 romListWidget->hide();
                 centralStackWidget->removeWidget(romListWidget);
                 delete romListWidget;
-                romListWidget = new RomListWidget(config, roms, this);
-                centralStackWidget->addWidget(romListWidget);
-                centralStackWidget->setCurrentWidget(romListWidget);
+                romListWidget = nullptr;
+                HideRomDirWidget();
             }
         }
     }
@@ -272,18 +271,19 @@ void MainWindow::HideRomDirWidget()
     if (!romListWidget)
     {
         romListWidget = new RomListWidget(config, roms, this);
-        for (int i = 0; i < romListWidget->GetListWidget()->count(); i++)
-        {
-            auto *item = dynamic_cast<RomListItem *>(
-                romListWidget->GetListWidget()->itemWidget(
-                    romListWidget->GetListWidget()->item(i)));
-
-            QObject::connect(item, &RomListItem::PlayRom, this,
-                             &MainWindow::PlayRom);
-        }
-        connect(romListWidget, &RomListWidget::ConfigRomFile, this,
-                &MainWindow::WriteRomConfigFile);
     }
+    for (int i = 0; i < romListWidget->GetListWidget()->count(); i++)
+    {
+        auto *item = dynamic_cast<RomListItem *>(
+            romListWidget->GetListWidget()->itemWidget(
+                romListWidget->GetListWidget()->item(i)));
+
+        QObject::connect(item, &RomListItem::PlayRom, this,
+                         &MainWindow::PlayRom);
+    }
+    connect(romListWidget, &RomListWidget::ConfigRomFile, this,
+            &MainWindow::WriteRomConfigFile);
+
     centralStackWidget->addWidget(romListWidget);
     centralStackWidget->setCurrentWidget(romListWidget);
 }

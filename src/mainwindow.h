@@ -19,7 +19,7 @@ QT_END_NAMESPACE
 struct Rom
 {
     std::filesystem::path path;
-    uint32_t tickRate = 1; // ms
+    uint32_t tickRate = 1000; //
     uint32_t bgColor = 0x00000000;
     uint32_t fgColor = 0xffffffff;
     bool useDefValuse = true;

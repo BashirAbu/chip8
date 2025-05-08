@@ -1,4 +1,3 @@
-#include "chip_8.h"
 #include "configdialog.h"
 #include "romlistwidget.h"
 #include "ui_romlistwidget.h"

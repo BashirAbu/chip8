@@ -3,5 +3,5 @@
     "fg_color": 4294967295,
     "path": "D:/chip_8/roms/flightrunner.ch8",
     "tick_rate": 1,
-    "use_def_values": true
+    "use_def_values": false
 }
