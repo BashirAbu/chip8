@@ -10,6 +10,7 @@
 #include <qobject.h>
 #include <qpoint.h>
 #include <qtimer.h>
+
 Chip8Widget::Chip8Widget(const Rom *rom, QWidget *parent)
     : QWidget(parent), rom(rom)
 {
@@ -38,6 +39,7 @@ void Chip8Widget::Play()
     QObject::connect(tickTimer, &QTimer::timeout, this, &Chip8Widget::Tick);
     tickTimer->start((int)rom->tickRate);
 }
+
 void Chip8Widget::Pause()
 {
     tickTimer->stop();

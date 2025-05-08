@@ -51,8 +51,12 @@ class MainWindow : public QMainWindow
     void ChangeRomsDir();
     void ConfigAct(Rom *rom = nullptr);
 
+  protected:
+    bool event(QEvent *e) override;
+
   private:
     Rom ParseRomConfigFile(std::filesystem::path configPath);
+    void GenRomThumbnail(Rom *rom);
     void WriteRomConfigFile(Rom *rom);
 
     Ui::MainWindow *ui;

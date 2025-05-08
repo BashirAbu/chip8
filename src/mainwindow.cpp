@@ -1,4 +1,5 @@
 #include "./ui_mainwindow.h"
+#include "chip_8.h"
 #include "chip_8_widget.h"
 #include "configdialog.h"
 #include "mainwindow.h"
@@ -10,9 +11,11 @@
 #include <QJsonObject>
 #include <filesystem>
 #include <qaction.h>
+#include <qcoreevent.h>
 #include <qimage.h>
 #include <qjsondocument.h>
 #include <qjsonobject.h>
+#include <qmainwindow.h>
 #include <qobject.h>
 #include <qstackedwidget.h>
 #include <qvariant.h>
@@ -63,6 +66,46 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() { delete ui; }
+
+bool MainWindow::event(QEvent *e)
+{
+    if (e->type() == QEvent::WindowActivate)
+    {
+        if (!config.romsDir.empty())
+        {
+            ParseRomsInRomDir();
+            if (centralStackWidget->currentWidget() == romListWidget)
+            {
+                romListWidget->hide();
+                centralStackWidget->removeWidget(romListWidget);
+                delete romListWidget;
+                romListWidget = new RomListWidget(config, roms, this);
+                centralStackWidget->addWidget(romListWidget);
+                centralStackWidget->setCurrentWidget(romListWidget);
+            }
+        }
+    }
+    return QMainWindow::event(e);
+}
+
+void MainWindow::GenRomThumbnail(Rom *rom)
+{
+    Chip8 chip8(rom->path);
+    for (int i = 0; i < 50000; i++)
+    {
+        chip8.Tick();
+    }
+
+    QImage img(chip8.display, DISPLAY_WIDTH, DISPLAY_HEIGHT,
+               QImage::Format_Grayscale8);
+
+    img.save(std::format("config/{}/{}_thumbnail.png",
+                         rom->path.filename().string(),
+                         rom->path.filename().string())
+                 .c_str(),
+             "PNG");
+}
+
 void MainWindow::ConfigAct(Rom *rom)
 {
     if (rom)
@@ -104,9 +147,23 @@ void MainWindow::ParseRomsInRomDir()
             if (path.path().extension() == ".ch8" ||
                 path.path().extension() == ".c8")
             {
-                std::filesystem::path romConfigPath = std::format(
-                    "config/{}/config.json", path.path().filename().string());
-                roms.push_back(ParseRomConfigFile(romConfigPath));
+                bool found = false;
+                for (Rom &r : roms)
+                {
+                    std::filesystem::path p =
+                        config.romsDir / path.path().filename();
+                    if (r.path == p)
+                    {
+                        found = true;
+                    }
+                }
+                if (!found)
+                {
+                    std::filesystem::path romConfigPath =
+                        std::format("config/{}/config.json",
+                                    path.path().filename().string());
+                    roms.push_back(ParseRomConfigFile(romConfigPath));
+                }
             }
         }
     }
@@ -149,6 +206,8 @@ Rom MainWindow::ParseRomConfigFile(std::filesystem::path configPath)
         configFile.close();
         configFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
         configFile.write(doc.toJson(QJsonDocument::Indented));
+
+        GenRomThumbnail(&rom);
     }
     else
     {

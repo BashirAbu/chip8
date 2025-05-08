@@ -10,6 +10,20 @@ namespace Ui
     class RomListWidget;
 }
 
+class ThumbnailContainer : public QWidget
+{
+    Q_OBJECT
+  public:
+    ThumbnailContainer(QString path, QWidget *parent = nullptr);
+    ~ThumbnailContainer();
+
+  protected:
+    void paintEvent(QPaintEvent *event);
+
+  private:
+    QImage thumbnail;
+};
+
 class RomListItem : public QWidget
 {
     Q_OBJECT
@@ -23,6 +37,7 @@ class RomListItem : public QWidget
     void mouseDoubleClickEvent(class QMouseEvent *event) override;
     Rom &rom;
     class QLabel *romTitle = nullptr;
+    ThumbnailContainer *thumbnailCnt = nullptr;
     class QHBoxLayout *hlayout = nullptr;
     friend RomListWidget;
 };

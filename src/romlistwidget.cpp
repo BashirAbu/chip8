@@ -1,21 +1,53 @@
+#include "chip_8.h"
 #include "configdialog.h"
 #include "romlistwidget.h"
 #include "ui_romlistwidget.h"
 #include <QListWidgetItem>
 #include <QMenu>
+#include <QPainter>
 #include <qaction.h>
 #include <qboxlayout.h>
 #include <qdialog.h>
 #include <qevent.h>
 #include <qlabel.h>
 #include <qlistwidget.h>
+#include <qlogging.h>
 #include <qnamespace.h>
+
+ThumbnailContainer::ThumbnailContainer(QString path, QWidget *parent)
+    : QWidget(parent)
+{
+
+    thumbnail.load(path);
+    setMinimumSize({192, 102});
+    setMaximumSize({192, 102});
+}
+
+ThumbnailContainer::~ThumbnailContainer() {}
+
+void ThumbnailContainer::paintEvent(QPaintEvent *event)
+{
+    QPainter p(this);
+
+    QSize scaled = thumbnail.size();
+    scaled.scale(size(), Qt::KeepAspectRatio);
+    QRect targetRect(QPoint(0, 0), scaled);
+    p.drawImage(targetRect, thumbnail);
+}
 RomListItem::RomListItem(Rom &rom, QWidget *parent) : QWidget(parent), rom(rom)
 {
 
     hlayout = new QHBoxLayout(this);
 
     this->setLayout(hlayout);
+
+    thumbnailCnt = new ThumbnailContainer(
+        std::format("config/{}/{}_thumbnail.png", rom.path.filename().string(),
+                    rom.path.filename().string())
+            .c_str(),
+        this);
+    hlayout->addWidget(thumbnailCnt);
+
     romTitle = new QLabel(this);
     hlayout->addWidget(romTitle);
     QString romName = rom.path.stem().string().c_str();
