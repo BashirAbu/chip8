@@ -1,8 +1,8 @@
+#include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "chip_8.h"
 #include "chip_8_widget.h"
 #include "configdialog.h"
-#include "mainwindow.h"
 #include "romdirwidget.h"
 #include "romlistwidget.h"
 #include <QFileDialog>
@@ -194,9 +194,9 @@ Rom MainWindow::ParseRomConfigFile(std::filesystem::path configPath)
         rom.path = config.romsDir / configPath.parent_path().filename();
         QJsonObject root = {
             {"path", rom.path.generic_string().c_str()},
-            {"tick_rate", (int64_t)config.defRomConfig.tickRate},
-            {"bg_color", (int64_t)config.defRomConfig.bgColor},
-            {"fg_color", (int64_t)config.defRomConfig.fgColor},
+            {"tick_rate", (const long long)config.defRomConfig.tickRate},
+            {"bg_color", (const long long)config.defRomConfig.bgColor},
+            {"fg_color", (const long long)config.defRomConfig.fgColor},
             {"use_def_values", true}};
         doc.setObject(root);
         if (!doc.isObject())
@@ -249,16 +249,16 @@ void MainWindow::WriteRomConfigFile(Rom *rom)
     }
 
     QJsonObject root = {{"path", rom->path.generic_string().c_str()},
-                        {"tick_rate", (int64_t)rom->tickRate},
-                        {"bg_color", (int64_t)rom->bgColor},
-                        {"fg_color", (int64_t)rom->fgColor},
+                        {"tick_rate", (const long long)rom->tickRate},
+                        {"bg_color", (const long long)rom->bgColor},
+                        {"fg_color", (const long long)rom->fgColor},
                         {"use_def_values", rom->useDefValuse}};
     if (rom->useDefValuse)
     {
         root = {{"path", rom->path.generic_string().c_str()},
-                {"tick_rate", (int64_t)config.defRomConfig.tickRate},
-                {"bg_color", (int64_t)config.defRomConfig.bgColor},
-                {"fg_color", (int64_t)config.defRomConfig.fgColor},
+                {"tick_rate", (const long long)config.defRomConfig.tickRate},
+                {"bg_color", (const long long)config.defRomConfig.bgColor},
+                {"fg_color", (const long long)config.defRomConfig.fgColor},
                 {"use_def_values", true}};
     }
     configFile.write(QJsonDocument(root).toJson());
@@ -370,9 +370,9 @@ void MainWindow::ParseConfigFile()
     {
         QJsonObject root = {
             {"rom_dir", ""},
-            {"tick_rate", (int64_t)config.defRomConfig.tickRate},
-            {"bg_color", (int64_t)config.defRomConfig.bgColor},
-            {"fg_color", (int64_t)config.defRomConfig.fgColor},
+            {"tick_rate", (const long long)config.defRomConfig.tickRate},
+            {"bg_color", (const long long)config.defRomConfig.bgColor},
+            {"fg_color", (const long long)config.defRomConfig.fgColor},
         };
         doc.setObject(root);
         if (!doc.isObject())
@@ -420,9 +420,9 @@ void MainWindow::WriteConfigFile()
 
     QJsonObject obj = {
         {"rom_dir", config.romsDir.generic_string().c_str()},
-        {"tick_rate", (int64_t)config.defRomConfig.tickRate},
-        {"bg_color", (int64_t)config.defRomConfig.bgColor},
-        {"fg_color", (int64_t)config.defRomConfig.fgColor},
+        {"tick_rate", (const long long)config.defRomConfig.tickRate},
+        {"bg_color", (const long long)config.defRomConfig.bgColor},
+        {"fg_color", (const long long)config.defRomConfig.fgColor},
     };
 
     configFile.write(QJsonDocument(obj).toJson());
